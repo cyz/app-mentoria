@@ -41,3 +41,62 @@ section h3 {
 .activity-card:hover {
   transform: translateY(-2px);
 }
+
+.participants-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.participants-section h5 {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.participants-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.participants-list li {
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.participant-email {
+  display: flex;
+  align-items: center;
+}
+
+.participant-email:before {
+  content: "👤";
+  margin-right: 0.5rem;
+}
+
+.delete-participant {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  padding: 0.2rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.delete-participant:hover {
+  opacity: 1;
+}
+
+.no-participants {
+  font-style: italic;
+  color: #6c757d;
+  font-size: 0.85rem;
+}
