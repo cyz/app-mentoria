@@ -33,3 +33,60 @@ section h3 {
 .hidden {
   display: none;
 }
+
+.participants-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.participants-title {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.participants-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+.participants-list li {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.participants-list li::marker {
+  color: #007bff;
+}
+
+.no-participants {
+  color: #adb5bd;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.participants-count {
+  color: #007bff;
+  font-weight: 600;
+  background-color: #e7f3ff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.activity-card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+}

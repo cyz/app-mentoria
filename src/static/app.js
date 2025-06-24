@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
-        activityCard.className = "card mb-4";
+        activityCard.className = "card mb-4 activity-card";
 
         const spotsLeft = details.max_participants - details.participants.length;
 
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <h4 class='card-title'>${name}</h4>
           <p class='card-text'>${details.description}</p>
           <ul><li><strong>Agenda:</strong> ${details.schedule}</li>
-          <li><strong>Disponibilidade:</strong> ${spotsLeft} vagas livres</li></ul>
+          <li><strong>Disponibilidade:</strong> ${spotsLeft} vagas livres</li>
         `;
 
         activitiesList.appendChild(activityCard);

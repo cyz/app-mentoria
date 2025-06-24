@@ -1,18 +1,11 @@
-"""
-API de Organização de Turmas de Mentoria
-
-Uma API simples usando FastAPI que permite organizar a lista de alunas
-participantes das mentorias da comunidade WoMakersCode.
-"""
-
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
 
-app = FastAPI(title="API de Organização de Turmas de Mentoria",
-              description="API para visualização e inscrição de alunas em turmas de mentoria")
+app = FastAPI(title="Mergington High School API",
+              description="API for viewing and signing up for extracurricular activities")
 
 # Mount the static files directory
 current_dir = Path(__file__).parent
@@ -41,7 +34,6 @@ activities = {
     }
 }
 
-
 @app.get("/")
 def root():
     return RedirectResponse(url="/static/index.html")
@@ -54,14 +46,14 @@ def get_activities():
 
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
-    """Inscreva uma aluna para uma mentoria"""
+    """Sign up a student for an activity"""
     # Validate activity exists
     if activity_name not in activities:
-        raise HTTPException(status_code=404, detail="Mentoria não encontrada")
+        raise HTTPException(status_code=404, detail="Activity not found")
 
     # Get the specific activity
     activity = activities[activity_name]
 
     # Add student
     activity["participants"].append(email)
-    return {"message": f"Inscrição de {email} para {activity_name} confirmada!"}
+    return {"message": f"Signed up {email} for {activity_name}"}
