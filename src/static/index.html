@@ -17,6 +17,62 @@
     </header>
 
     <main class="container">
+      
+      <!-- Admin Section for Creating Activities -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+              <h4 class="mb-0">🛠️ Área Administrativa - Cadastro de Turmas</h4>
+            </div>
+            <div class="card-body">
+              <button class="btn btn-warning mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#admin-form" aria-expanded="false">
+                ➕ Nova Turma de Mentoria
+              </button>
+              <div class="collapse" id="admin-form">
+                <form id="create-activity-form" class="row g-3">
+                  <div class="col-md-6">
+                    <label for="title" class="form-label">Título da Turma *</label>
+                    <input type="text" class="form-control" id="title" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="mentor-name" class="form-label">Nome da Mentora *</label>
+                    <input type="text" class="form-control" id="mentor-name" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="mentor-email" class="form-label">E-mail da Mentora *</label>
+                    <input type="email" class="form-control" id="mentor-email" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="max-participants" class="form-label">Máximo de Participantes *</label>
+                    <input type="number" class="form-control" id="max-participants" min="1" max="50" required>
+                  </div>
+                  <div class="col-12">
+                    <label for="description" class="form-label">Descrição *</label>
+                    <textarea class="form-control" id="description" rows="3" required></textarea>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="schedule" class="form-label">Horário *</label>
+                    <input type="text" class="form-control" id="schedule" placeholder="Ex: Quartas-feiras, 19:00 - 20:30" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="soft-skills" class="form-label">Soft Skills (separadas por vírgula) *</label>
+                    <input type="text" class="form-control" id="soft-skills" placeholder="Ex: comunicação, liderança, gestão" required>
+                  </div>
+                  <div class="col-12">
+                    <label for="requirements" class="form-label">Pré-requisitos</label>
+                    <textarea class="form-control" id="requirements" rows="2" placeholder="Opcional"></textarea>
+                  </div>
+                  <div class="col-12">
+                    <button type="submit" class="btn btn-success">✅ Criar Turma</button>
+                    <button type="reset" class="btn btn-outline-secondary ms-2">🔄 Limpar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
         <div class="row align-items-start">
           <section id="activities-container" class="col col-12 col-md-6">

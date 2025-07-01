@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitiesList = document.getElementById("activities-list");
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
+  const createActivityForm = document.getElementById("create-activity-form");
   const messageDiv = document.getElementById("message");
 
   // Function to fetch activities from API
@@ -10,15 +11,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch("/activities");
       const activities = await response.json();
 
-      // Clear loading message
+      // Clear loading message and select options
       activitiesList.innerHTML = "";
+      activitySelect.innerHTML = '<option value="">-- Selecione a atividade --</option>';
 
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
         activityCard.className = "card mb-4 activity-card";
 
-        const spotsLeft = details.max_participants - details.participants.length;
+        const spotsLeft = details.max_participants - details.current_participants;
         
         // Create participants list HTML
         let participantsHTML = '';
@@ -48,12 +50,28 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
         }
 
+        // Create soft skills badges
+        const skillsBadges = details.soft_skills_focus?.map(skill => 
+          `<span class="badge bg-secondary me-1">${skill}</span>`
+        ).join('') || '';
+
         activityCard.innerHTML = `
-          <h4 class='card-title'>${name}</h4>
-          <p class='card-text'>${details.description}</p>
-          <ul><li><strong>Agenda:</strong> ${details.schedule}</li>
-          <li><strong>Disponibilidade:</strong> ${spotsLeft} vagas livres</li></ul>
-          ${participantsHTML}
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class='card-title mb-0'>${name}</h4>
+            <small class="text-muted">👩‍🏫 ${details.mentor_name}</small>
+          </div>
+          <div class="card-body">
+            <p class='card-text'>${details.description}</p>
+            <div class="mb-2">
+              <strong>📅 Horário:</strong> ${details.schedule}
+            </div>
+            <div class="mb-2">
+              <strong>👥 Disponibilidade:</strong> ${spotsLeft} vagas livres (${details.current_participants}/${details.max_participants})
+            </div>
+            ${skillsBadges ? `<div class="mb-2"><strong>🎯 Soft Skills:</strong><br>${skillsBadges}</div>` : ''}
+            ${details.requirements ? `<div class="mb-2"><strong>📋 Pré-requisitos:</strong> ${details.requirements}</div>` : ''}
+            ${participantsHTML}
+          </div>
         `;
 
         activitiesList.appendChild(activityCard);
@@ -87,26 +105,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (response.ok) {
-        messageDiv.textContent = result.message;
-        messageDiv.className = "success";
-        
-        // Refresh activities list to reflect changes
-        fetchActivities();
+        showMessage(result.message, 'success');
+        fetchActivities(); // Refresh activities list
       } else {
-        messageDiv.textContent = result.detail || "Erro ao cancelar inscrição";
-        messageDiv.className = "error";
+        showMessage(result.detail || "Erro ao cancelar inscrição", 'error');
       }
-
-      messageDiv.classList.remove("hidden");
-
-      // Hide message after 5 seconds
-      setTimeout(() => {
-        messageDiv.classList.add("hidden");
-      }, 5000);
     } catch (error) {
-      messageDiv.textContent = "Falha ao cancelar inscrição. Tente novamente.";
-      messageDiv.className = "error";
-      messageDiv.classList.remove("hidden");
+      showMessage("Falha ao cancelar inscrição. Tente novamente.", 'error');
       console.error("Erro ao cancelar inscrição:", error);
     }
   }
@@ -114,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Make cancelParticipant function globally available
   window.cancelParticipant = cancelParticipant;
 
-  // Handle form submission
+  // Handle signup form submission
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -132,30 +137,82 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (response.ok) {
-        messageDiv.textContent = result.message;
-        messageDiv.className = "success";
+        showMessage(result.message, 'success');
         signupForm.reset();
-        
-        // Refresh activities list to reflect changes
-        fetchActivities();
+        fetchActivities(); // Refresh activities list
       } else {
-        messageDiv.textContent = result.detail || "Ocorreu um erro";
-        messageDiv.className = "error";
+        showMessage(result.detail || "Ocorreu um erro", 'error');
       }
-
-      messageDiv.classList.remove("hidden");
-
-      // Hide message after 5 seconds
-      setTimeout(() => {
-        messageDiv.classList.add("hidden");
-      }, 5000);
     } catch (error) {
-      messageDiv.textContent = "Falha ao cadastrar. Tente novamente.";
-      messageDiv.className = "error";
-      messageDiv.classList.remove("hidden");
+      showMessage("Falha ao cadastrar. Tente novamente.", 'error');
       console.error("Erro ao inscrever-se:", error);
     }
   });
+
+  // Handle create activity form submission
+  createActivityForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(createActivityForm);
+    const softSkillsInput = document.getElementById("soft-skills").value;
+    
+    const activityData = {
+      title: document.getElementById("title").value,
+      description: document.getElementById("description").value,
+      mentor_name: document.getElementById("mentor-name").value,
+      mentor_email: document.getElementById("mentor-email").value,
+      max_participants: parseInt(document.getElementById("max-participants").value),
+      schedule: document.getElementById("schedule").value,
+      soft_skills_focus: softSkillsInput.split(',').map(skill => skill.trim()).filter(skill => skill),
+      requirements: document.getElementById("requirements").value || null
+    };
+
+    await createActivity(activityData);
+  });
+
+  // Function to show notification message
+  function showMessage(text, type = 'success') {
+    messageDiv.textContent = text;
+    messageDiv.className = type;
+    messageDiv.classList.remove("hidden");
+    
+    // Hide message after 5 seconds
+    setTimeout(() => {
+      messageDiv.classList.add("hidden");
+    }, 5000);
+  }
+
+  // Function to create new activity
+  async function createActivity(activityData) {
+    try {
+      const response = await fetch("/activities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(activityData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showMessage(`Turma "${activityData.title}" criada com sucesso!`, 'success');
+        createActivityForm.reset();
+        
+        // Collapse the form
+        const collapseElement = document.getElementById("admin-form");
+        const bsCollapse = new bootstrap.Collapse(collapseElement, { hide: true });
+        
+        // Refresh activities list
+        fetchActivities();
+      } else {
+        showMessage(result.detail || "Erro ao criar turma", 'error');
+      }
+    } catch (error) {
+      showMessage("Falha ao criar turma. Tente novamente.", 'error');
+      console.error("Erro ao criar atividade:", error);
+    }
+  }
 
   // Initialize app
   fetchActivities();
