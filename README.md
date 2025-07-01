@@ -42,3 +42,48 @@ python app.py
 - Interface web interativa em index.html
 
 As dependências já estão instaladas via requirements.txt no dev container.
+
+## Roadmap - Próximas Funcionalidades
+
+### 🔐 Sistema de Autenticação
+- [ ] Login/logout para mentoras e alunas
+- [ ] Perfis detalhados com dados profissionais
+- [ ] Histórico de participação em mentorias
+
+### 📊 Gestão Avançada
+- [ ] Sistema de frequência e presença
+- [ ] Feedback e avaliação das mentorias
+- [ ] Dashboard para coordenadoras
+- [ ] Relatórios de participação e engajamento
+
+### 💬 Comunicação
+- [ ] Sistema de notificações
+- [ ] Chat entre mentoras e alunas
+- [ ] Calendário integrado de eventos
+- [ ] Lembretes automáticos por email
+
+### 📚 Conteúdo e Materiais
+- [ ] Upload de materiais das mentorias
+- [ ] Biblioteca de recursos de soft skills
+- [ ] Certificados digitais de conclusão
+- [ ] Links e referências por atividade
+
+### 🤖 Inteligência
+- [ ] Matching inteligente mentora-aluna
+- [ ] Sugestões personalizadas
+- [ ] Algoritmo baseado em interesses e experiência
+
+### 📈 Analytics
+- [ ] Métricas de sucesso das mentorias
+- [ ] Acompanhamento de progresso individual
+- [ ] Relatórios de impacto do programa
+- [ ] KPIs do programa de mentoria
+
+## Inspiração
+
+Este roadmap foi inspirado em análise de sistemas similares como:
+- College Management Systems
+- Plataformas de mentoria corporativa
+- Sistemas de gestão educacional
+
+As funcionalidades propostas visam transformar o projeto em uma plataforma completa de mentoria, mantendo o foco nas soft skills e no empoderamento feminino na tecnologia.
