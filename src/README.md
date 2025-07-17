@@ -1,4 +1,4 @@
-# API de Atividades da Mergington High School
+# API de Mentorias
 
 Uma aplicação FastAPI super simples que permite aos estudantes visualizar e se inscrever em atividades extracurriculares.
 
@@ -30,7 +30,7 @@ Uma aplicação FastAPI super simples que permite aos estudantes visualizar e se
 | Método | Endpoint                                                            | Descrição                                                           |
 | ------ | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | GET    | `/activities`                                                       | Obtém todas as atividades com seus detalhes e número atual de participantes |
-| POST   | `/activities/{activity_name}/signup?email=student@mergington.edu`   | Inscreve um estudante em uma atividade                              |
+| POST   | `/activities/{activity_name}/signup?email=student@mentorship.edu`   | Inscreve um estudante em uma atividade                              |
 
 ## Modelo de Dados
 

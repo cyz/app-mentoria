@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Mergington WebApp",
+      "name": "Launch Mentorship WebApp",
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",

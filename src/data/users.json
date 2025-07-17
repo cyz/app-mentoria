@@ -1,0 +1,43 @@
+{
+    "profiles": {
+        "coordenadora": {
+            "name": "Coordenadora",
+            "permissions": [
+                "create",
+                "read",
+                "update",
+                "delete",
+                "manage_activities",
+                "manage_participants"
+            ],
+            "color": "bg-blue-600",
+            "icon": "fas fa-users-cog"
+        },
+        "participante": {
+            "name": "Participante",
+            "permissions": [
+                "read",
+                "self_manage"
+            ],
+            "color": "bg-pink-600",
+            "icon": "fas fa-user-graduate"
+        }
+    },
+    "users": {
+        "coordenadora": {
+            "name": "Maria Silva",
+            "email": "maria.silva@womakerscode.org",
+            "profile": "coordenadora"
+        },
+        "participante": {
+            "name": "Larissa Santos",
+            "email": "larissa.santos@gmail.com",
+            "profile": "participante"
+        }
+    },
+    "current_user": {
+        "name": "Larissa Santos",
+        "email": "larissa.santos@gmail.com",
+        "profile": "participante"
+    }
+}

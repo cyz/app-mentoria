@@ -15,7 +15,7 @@ O projeto já está configurado no dev container. Para executar:
 
 ### Opção 1: Usando o VS Code (Recomendado)
 1. Pressione `F5` ou use o menu "Run and Debug"
-2. Selecione "Launch Mergington WebApp"
+2. Selecione "Launch Mentorship WebApp"
 
 ### Opção 2: Terminal
 ```bash

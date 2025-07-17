@@ -1,64 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Maratonas de Mentoria WoMakersCode</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header class="container-fluid mb-4 text-center text-white">
-      <h1>WoMakersCode</h1>
-      <h2>Maratonas de Mentoria de Soft Skills</h2>
-      
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WoMakersCode - Dashboard de Mentorias</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Cores mais suaves e profissionais
+                        primary: '#6366f1',
+                        secondary: '#ec4899',
+                        accent: '#10b981',
+                        dark: '#1f2937',
+                        light: '#f9fafb',
+                        'wmc-pink': '#FF609A',
+                        'wmc-dark': '#16181b'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="relative bg-gray-900 text-white">
+        <!-- Banner Image -->
+        <div class="absolute inset-0">
+            <img src="img/cover.jpg" alt="WoMakersCode Banner" class="w-full h-full object-cover opacity-80">
+            <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
+        </div>
+        
+        <div class="relative container mx-auto px-6 py-16">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold mb-4">WoMakersCode</h1>
+                <p class="text-xl text-gray-200 mb-6">Dashboard de Mentorias de Soft Skills</p>
+                <p class="text-lg text-gray-300 max-w-2xl mx-auto">
+                    Transformando carreiras através de mentorias especializadas em soft skills para mulheres na tecnologia
+                </p>
+            </div>
+            
+            <!-- Profile Selector -->
+            <div class="mt-8 flex justify-center">
+                <div class="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg p-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <i id="current-profile-icon" class="fas fa-users-cog text-blue-400 text-xl"></i>
+                            <span class="text-white font-medium">
+                                <span id="current-user-name">Carregando...</span>
+                                (<span id="current-profile-name">Carregando...</span>)
+                            </span>
+                        </div>
+                        <select id="profile-selector" 
+                                class="bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent">
+                            <option value="">Carregando perfis...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <main class="container">
-
-        <div class="row align-items-start">
-          <section id="activities-container" class="col col-12 col-md-6">
-            <h3 class="text-secondary">Turmas disponíveis</h3>
-            <div id="activities-list">
-              <!-- Activities will be loaded here -->
-              <p>Carregando as atividades...</p>
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-accent">
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-week text-accent text-2xl mr-4"></i>
+                    <div>
+                        <p class="text-gray-600 text-sm">Mentorias Esta Semana</p>
+                        <p id="this-week-activities" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
             </div>
-          </section>
-
-          <section id="signup-container" class="col col-12 col-md-5 me-1">
-            <h3 class="text-secondary">Inscrição para sessões de mentoria</h3>
-            <form id="signup-form">
-              <div class="form-group mb-3">
-                <label for="email">E-mail da aluna:</label>
-                <input type="email" id="email" class="form-control" required placeholder="aluna@womakerscode.org" />
-              </div>
-              <div class="form-group mb-3">
-                <label for="activity">Turma:</label>
-                <select id="activity" class="form-select" required>
-                  <option value="">-- Selecione a atividade --</option>
-                  <!-- A lista de atividades será carregada aqui -->
-                </select>
-              </div>
-              <button type="submit" class="btn btn-primary w-100">Confirmar inscrição</button>
-            </form>
-            <div id="message" class="hidden mt-3"></div>
-        </section>
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary">
+                <div class="flex items-center">
+                    <i class="fas fa-user-plus text-primary text-2xl mr-4"></i>
+                    <div>
+                        <p class="text-gray-600 text-sm">Novas Inscrições</p>
+                        <p id="new-signups" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-secondary">
+                <div class="flex items-center">
+                    <i class="fas fa-percentage text-secondary text-2xl mr-4"></i>
+                    <div>
+                        <p class="text-gray-600 text-sm">Taxa de Ocupação</p>
+                        <p id="occupancy-rate" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mr-4"></i>
+                    <div>
+                        <p class="text-gray-600 text-sm">Quase Lotadas</p>
+                        <p id="almost-full" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      
+
+        <!-- Search and Filters -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 gap-4">
+                <div class="flex-1">
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Buscar Mentoria</label>
+                    <div class="relative">
+                        <input type="text" id="search" placeholder="Digite o nome da mentoria..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-end space-y-4 sm:space-y-0 sm:space-x-4">
+                    <div class="flex-1 sm:flex-none">
+                        <label for="filter" class="block text-sm font-medium text-gray-700 mb-2">Filtrar por</label>
+                        <select id="filter" class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="all">Todas as mentorias</option>
+                            <option value="available">Com vagas disponíveis</option>
+                            <option value="full">Lotadas</option>
+                        </select>
+                    </div>
+                    <button onclick="dashboard.openAddMentorshipModal()" 
+                            class="bg-wmc-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-all duration-300 font-medium whitespace-nowrap">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nova Mentoria
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activities Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="activities-grid">
+            <!-- Cards will be loaded here -->
+            <div class="col-span-full flex justify-center items-center py-8">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                    <p class="text-gray-600">Carregando mentorias...</p>
+                </div>
+            </div>
+        </div>
+
+
     </main>
 
-    <footer class="py-4">
-        <div class="container px-5">
-            <div class="row align-items-center justify-content-between flex-column flex-sm-row">
-                <div class="col-auto"><div class="small m-0">© Copyright WoMakersCode 2015-2025 . Todos os direitos reservados.</div></div>
-                <div class="col-auto">
-                    <span class="mx-1">Women + Tech = strong</span>
+    <!-- Modal for Activity Details -->
+    <div id="activity-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 id="modal-title" class="text-2xl font-bold text-gray-800">Detalhes da Mentoria</h2>
+                    <button id="close-modal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
                 </div>
+                
+                <div id="modal-content">
+                    <!-- Modal content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="toast-message">Mensagem</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex justify-center items-center">
+                <p class="text-sm flex items-center space-x-2">
+                    <span>Feito com</span>
+                    <i class="fas fa-heart text-red-500"></i>
+                    <span>& GitHub Copilot</span>
+                </p>
             </div>
         </div>
     </footer>
 
     <script src="app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
-  </body>
+</body>
 </html>
