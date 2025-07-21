@@ -1,7 +1,7 @@
 {
     "profiles": {
         "coordenadora": {
-            "name": "Coordenadora",
+            "name": "Admin",
             "permissions": [
                 "create",
                 "read",
@@ -14,7 +14,7 @@
             "icon": "fas fa-users-cog"
         },
         "participante": {
-            "name": "Participante",
+            "name": "Student",
             "permissions": [
                 "read",
                 "self_manage"

@@ -6,8 +6,8 @@ import os
 from pathlib import Path
 from .data_manager import data_manager
 
-app = FastAPI(title="WoMakersCode",
-              description="API para organização de turmas de mentoria de soft skills")
+app = FastAPI(title="WoMakersCode", 
+              description="API for organizing soft skills mentoring classes")
 
 # Mount the static files directory
 current_dir = Path(__file__).parent
@@ -21,7 +21,7 @@ def root():
 
 @app.get("/users/current")
 def get_current_user():
-    """Obtém informações do usuário atual"""
+    """Gets current user information"""
     current_user = data_manager.get_current_user()
     users_data = data_manager.load_users()
     profile_name = current_user.get("profile", "participant")
@@ -35,104 +35,104 @@ def get_current_user():
 
 @app.post("/users/switch-profile")
 def switch_profile(profile_name: str):
-    """Alterna o perfil do usuário (simulação)"""
+    """Switch user profile (simulation)"""
     try:
         result = data_manager.switch_user_profile(profile_name)
         
         if result:
             new_user = data_manager.get_current_user()
-            return {"message": f"Perfil alterado para {profile_name}", "user": new_user}
+            return {"message": f"Profile changed to {profile_name}", "user": new_user}
         else:
-            raise HTTPException(status_code=400, detail="Falha ao alterar perfil")
+            raise HTTPException(status_code=400, detail="Failed to change profile")
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 @app.get("/users/profiles")
 def get_profiles():
-    """Obtém todos os perfis disponíveis"""
+    """Gets all available profiles"""
     users_data = data_manager.load_users()
     return users_data.get("profiles", {})
 
 @app.get("/activities")
 def get_activities():
-    return data_manager.load_activities()
+    return data_manager.refresh_activities()
 
 
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, name: str = None, email: str = None):
-    """Inscreva uma aluna para uma mentoria"""
+    """Enroll a student in a mentorship"""
     current_user = data_manager.get_current_user()
-    
-    # Se é participante, use os dados do próprio usuário
+
+    # If participant, use own user data
     if "self_manage" in data_manager.get_user_permissions():
         name = current_user.get("name", "")
         email = current_user.get("email", "")
         if not name or not email:
-            raise HTTPException(status_code=400, detail="Dados do usuário incompletos")
+            raise HTTPException(status_code=400, detail="User data is incomplete")
     else:
-        # Para outros perfis, verificar permissões
+        # For other profiles, check permissions
         if not data_manager.has_permission("manage_participants") and not data_manager.has_permission("create"):
-            raise HTTPException(status_code=403, detail="Sem permissão para inscrever participantes")
-        
+            raise HTTPException(status_code=403, detail="No permission to enroll participants")
+
         if not name or not email:
-            raise HTTPException(status_code=400, detail="Nome e email são obrigatórios")
-        
+            raise HTTPException(status_code=400, detail="Name and email are required")
+
     # Validate activity exists
     if not data_manager.activity_exists(activity_name):
-        raise HTTPException(status_code=404, detail="Atividade não encontrada")
+        raise HTTPException(status_code=404, detail="Activity not found")
 
     # Check if student is already registered
     if data_manager.is_participant_registered(activity_name, email):
-        raise HTTPException(status_code=400, detail="Aluna já está inscrita nesta atividade")
-    
+        raise HTTPException(status_code=400, detail="Student is already registered for this activity")
+
     # Check if activity is full
     if data_manager.is_activity_full(activity_name):
-        raise HTTPException(status_code=400, detail="Atividade está lotada")
+        raise HTTPException(status_code=400, detail="Activity is full")
 
     # Check if student has another activity on the same day
     if data_manager.has_activity_on_same_day(activity_name, email):
         existing_activity = data_manager.get_user_activity_same_day(activity_name, email)
         raise HTTPException(
             status_code=400, 
-            detail=f"Você já possui uma mentoria no mesmo dia: '{existing_activity}'. Não é possível se inscrever em mais de uma mentoria por semana."
+            detail=f"You already have a mentorship on the same day: '{existing_activity}'. It is not possible to enroll in more than one mentorship per week."
         )
 
     # Add student
     data_manager.add_participant(activity_name, name, email)
-    return {"message": f"A aluna {name} foi inscrita na atividade: {activity_name}"}
+    return {"message": f"Student {name} has been registered for the activity: {activity_name}"}
 
 
 @app.delete("/activities/{activity_name}/cancel")
 def cancel_activity_signup(activity_name: str, email: str = None):
-    """Cancele a inscrição de uma aluna para uma mentoria"""
+    """Cancel a student's registration for a mentorship"""
     current_user = data_manager.get_current_user()
-    
-    # Se é participante, só pode cancelar própria inscrição
+
+    # If participant, can only cancel own registration
     if "self_manage" in data_manager.get_user_permissions():
         email = current_user.get("email", "")
         if not email:
-            raise HTTPException(status_code=400, detail="Email do usuário não encontrado")
+            raise HTTPException(status_code=400, detail="User email not found")
     else:
-        # Para outros perfis, verificar permissões
+        # For other profiles, check permissions
         if not data_manager.has_permission("manage_participants") and not data_manager.has_permission("delete"):
-            raise HTTPException(status_code=403, detail="Sem permissão para remover participantes")
+            raise HTTPException(status_code=403, detail="No permission to remove participants")
         
         if not email:
-            raise HTTPException(status_code=400, detail="Email é obrigatório")
+            raise HTTPException(status_code=400, detail="Email is required")
         
     # Validate activity exists
     if not data_manager.activity_exists(activity_name):
-        raise HTTPException(status_code=404, detail="Atividade não encontrada")
+        raise HTTPException(status_code=404, detail="Activity not found")
 
     # Check if student is registered
     if not data_manager.is_participant_registered(activity_name, email):
-        raise HTTPException(status_code=400, detail="Aluna não está inscrita nesta atividade")
+        raise HTTPException(status_code=400, detail="Student is not registered for this activity")
 
     # Remove student
     data_manager.remove_participant(activity_name, email)
-    return {"message": f"A inscrição foi cancelada da atividade: {activity_name}"}
+    return {"message": f"Registration has been canceled from the activity: {activity_name}"}
 
 
 class NewActivity(BaseModel):
@@ -143,17 +143,17 @@ class NewActivity(BaseModel):
 
 @app.post("/activities")
 def create_activity(activity: NewActivity):
-    """Criar uma nova mentoria"""
+    """Create a new mentorship"""
     # Check permissions
     if not data_manager.has_permission("create"):
-        raise HTTPException(status_code=403, detail="Sem permissão para criar mentorias")
-        
+        raise HTTPException(status_code=403, detail="No permission to create mentorship")
+
     activities = data_manager.load_activities()
     
     # Check if activity already exists
     if activity.name in activities:
-        raise HTTPException(status_code=400, detail="Mentoria com este nome já existe")
-    
+        raise HTTPException(status_code=400, detail="Mentorship with this name already exists")
+
     # Add new activity
     activities[activity.name] = {
         "description": activity.description,
@@ -162,24 +162,59 @@ def create_activity(activity: NewActivity):
         "participants": []
     }
     
-    # Update the data manager's activities
+    # Update the data manager's activities and save
     data_manager._activities = activities
     data_manager.save_activities()
     
-    return {"message": f"Mentoria '{activity.name}' criada com sucesso"}
+    return {"message": f"Mentorship '{activity.name}' successfully created"}
+
+class ActivityUpdate(BaseModel):
+    max_participants: int | None = None
+    description: str | None = None
+    schedule: str | None = None
+
+@app.put("/activities/{activity_name}")
+def update_activity(activity_name: str, updates: ActivityUpdate):
+    """Update an existing mentorship"""
+    # Check permissions
+    if not data_manager.has_permission("create") and not data_manager.has_permission("manage_participants"):
+        raise HTTPException(status_code=403, detail="No permission to update mentorship")
+
+    # Check if activity exists
+    if not data_manager.activity_exists(activity_name):
+        raise HTTPException(status_code=404, detail="Mentorship not found")
+
+    # Prepare updates dict (only include non-None values)
+    update_dict = {}
+    if updates.max_participants is not None:
+        update_dict["max_participants"] = updates.max_participants
+    if updates.description is not None:
+        update_dict["description"] = updates.description
+    if updates.schedule is not None:
+        update_dict["schedule"] = updates.schedule
+    
+    if not update_dict:
+        raise HTTPException(status_code=400, detail="No updates provided")
+    
+    # Update activity
+    success = data_manager.update_activity(activity_name, update_dict)
+    if success:
+        return {"message": f"Mentorship '{activity_name}' successfully updated"}
+    else:
+        raise HTTPException(status_code=500, detail="Error updating mentorship")
 
 @app.delete("/activities/{activity_name}")
 def delete_activity(activity_name: str):
-    """Deletar uma mentoria"""
+    """Delete a mentorship"""
     # Check permissions
     if not data_manager.has_permission("delete"):
-        raise HTTPException(status_code=403, detail="Sem permissão para deletar mentorias")
-        
+        raise HTTPException(status_code=403, detail="No permission to delete mentorship")
+
     activities = data_manager.load_activities()
     
     # Check if activity exists
     if activity_name not in activities:
-        raise HTTPException(status_code=404, detail="Mentoria não encontrada")
+        raise HTTPException(status_code=404, detail="Mentorship not found")
     
     # Remove activity
     del activities[activity_name]
@@ -187,12 +222,12 @@ def delete_activity(activity_name: str):
     # Update the data manager's activities
     data_manager._activities = activities
     data_manager.save_activities()
-    
-    return {"message": f"Mentoria '{activity_name}' deletada com sucesso"}
+
+    return {"message": f"Mentorship '{activity_name}' successfully deleted"}
 
 @app.get("/users/activities")
 def get_current_user_activities():
-    """Obtém as atividades em que o usuário atual está inscrito"""
+    """Gets the activities the current user is subscribed to"""
     activities = data_manager.get_current_user_activities()
     return {"activities": activities}
 

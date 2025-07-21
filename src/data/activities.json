@@ -2,51 +2,30 @@
     "Comunicação Eficaz": {
         "description": "Desenvolva habilidades de comunicação assertiva e escuta ativa para ambientes de tecnologia.",
         "schedule": "Quartas-feiras, 19:00 - 20:30",
-        "max_participants": 25,
-        "participants": []
-    },
-    "Liderança Feminina": {
-        "description": "Aprenda técnicas de liderança, influência e gestão de equipes diversas no setor de tecnologia.",
-        "schedule": "Sábados, 10:00 - 11:30",
-        "max_participants": 20,
+        "max_participants": 5,
         "participants": []
     },
     "Gestão do Tempo e Produtividade": {
         "description": "Dicas práticas para organização, priorização de tarefas e equilíbrio entre vida pessoal e profissional.",
         "schedule": "Terças-feiras, 18:30 - 20:00",
-        "max_participants": 30,
-        "participants": [
-            {"name": "Claudia", "email": "claudia@womakerscode.org"}
-        ]
+        "max_participants": 5,
+        "participants": []
     },
     "Preparação para Entrevistas Técnicas": {
         "description": "Simulações de entrevistas, dicas de apresentação e resolução de problemas para processos seletivos em tecnologia.",
         "schedule": "Quintas-feiras, 20:00 - 21:30",
-        "max_participants": 15,
-        "participants": []
-    },
-    "Planejamento de Estudos para Carreira Tech": {
-        "description": "Estratégias para montar um plano de estudos eficiente focado em tecnologia.",
-        "schedule": "Domingos, 17:00 - 18:30",
-        "max_participants": 25,
-        "participants": []
-    },
-    "Organização de Rotina de Estudos": {
-        "description": "Dicas práticas para criar e manter uma rotina de estudos produtiva.",
-        "schedule": "Sextas-feiras, 19:00 - 20:00",
-        "max_participants": 30,
-        "participants": []
-    },
-    "Claude ": {
-        "description": "Model",
-        "schedule": "Terças-feiras das 20:00 às 22:00",
-        "max_participants": 20,
-        "participants": []
-    },
-    "Chelly": {
-        "description": "turma de mentoria",
-        "schedule": "Segundas-feiras das 20:00 às 21:30",
         "max_participants": 5,
         "participants": []
+    },
+    "CVs with Copilot": {
+        "description": "test",
+        "schedule": "Mondays das 17:00 às 19:30",
+        "max_participants": 20,
+        "participants": [
+            {
+                "name": "Larissa Santos",
+                "email": "larissa.santos@gmail.com"
+            }
+        ]
     }
 }

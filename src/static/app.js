@@ -11,9 +11,13 @@ class MentorshipDashboard {
     }
 
     async init() {
+        console.log('Dashboard initializing...');
         this.bindEvents();
-        await this.loadUserData(); // Aguardar carregamento dos dados do usuário
-        await this.loadActivities(); // Só carregar atividades depois dos dados do usuário
+        console.log('Events bound, loading user data...');
+        await this.loadUserData(); // Wait for user data to load
+        console.log('User data loaded, loading activities...');
+        await this.loadActivities(); // Only load activities after user data
+        console.log('Dashboard initialization complete');
     }
 
     bindEvents() {
@@ -55,7 +59,8 @@ class MentorshipDashboard {
 
     async loadActivities() {
         try {
-            const response = await fetch('/activities');
+            const timestamp = new Date().getTime();
+            const response = await fetch(`/activities?_t=${timestamp}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch activities');
             }
@@ -71,7 +76,44 @@ class MentorshipDashboard {
             }
         } catch (error) {
             console.error('Error loading activities:', error);
-            this.showError('Erro ao carregar mentorias. Tente novamente.');
+            this.showError('Error loading mentorships. Please try again.');
+        }
+    }
+
+    async refreshSingleActivity(activityName) {
+        console.log('Refreshing single activity:', activityName);
+        try {
+            const timestamp = new Date().getTime();
+            const response = await fetch(`/activities?_t=${timestamp}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch activities');
+            }
+            
+            const allActivities = await response.json();
+            console.log('Fetched all activities:', allActivities);
+            
+            if (allActivities[activityName]) {
+                console.log('Old activity data:', this.activities[activityName]);
+                this.activities[activityName] = allActivities[activityName];
+                console.log('New activity data:', this.activities[activityName]);
+                
+                this.updateStats();
+                this.filterAndDisplayActivities();
+                
+                // Update analytics if available
+                if (window.dashboardAnalytics) {
+                    dashboardAnalytics.updateMetrics(this.activities);
+                    this.updateQuickInsights();
+                }
+                
+                console.log('Single activity refresh completed successfully');
+            } else {
+                console.error('Activity not found in refreshed data:', activityName);
+            }
+        } catch (error) {
+            console.error('Error refreshing single activity:', error);
+            // Fallback to full reload if single activity refresh fails
+            await this.loadActivities();
         }
     }
 
@@ -147,7 +189,7 @@ class MentorshipDashboard {
             grid.innerHTML = `
                 <div class="col-span-full text-center py-8">
                     <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-600">Nenhuma mentoria encontrada com os filtros aplicados.</p>
+                    <p class="text-gray-600">No mentorships found with the applied filters.</p>
                 </div>
             `;
             return;
@@ -166,7 +208,7 @@ class MentorshipDashboard {
         // Determine card status styling
         const statusClass = isFull ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50';
         const statusIcon = isFull ? 'fas fa-times-circle text-red-500' : 'fas fa-check-circle text-green-500';
-        const statusText = isFull ? 'Lotada' : `${spotsLeft} vagas`;
+        const statusText = isFull ? 'Full' : `${spotsLeft} spots`;
         
         return `
             <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
@@ -191,7 +233,7 @@ class MentorshipDashboard {
                         
                         <div class="flex items-center text-sm text-gray-700">
                             <i class="fas fa-users mr-2 text-secondary"></i>
-                            <span>${activity.participants.length}/${activity.max_participants} participantes</span>
+                            <span>${activity.participants.length}/${activity.max_participants} participants</span>
                         </div>
                         
                         <!-- Progress Bar -->
@@ -204,7 +246,7 @@ class MentorshipDashboard {
                     <button onclick="dashboard.openActivityModal('${name}')" 
                             class="w-full bg-gradient-to-r from-primary to-secondary text-white py-2 px-4 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 font-medium">
                         <i class="fas fa-info-circle mr-2"></i>
-                        Ver Detalhes
+                        View Details
                     </button>
                 </div>
             </div>
@@ -222,9 +264,16 @@ class MentorshipDashboard {
 
     openActivityModal(activityName) {
         const activity = this.activities[activityName];
-        if (!activity) return;
+        console.log('Opening modal for activity:', activityName);
+        console.log('Activity data:', activity);
+        console.log('Participants count:', activity?.participants?.length || 0);
+        
+        if (!activity) {
+            console.error('Activity not found:', activityName);
+            return;
+        }
 
-        // Verificar se os dados do usuário foram carregados
+        // Check if user data has been loaded
         if (!this.currentUser || !this.userPermissions) {
             console.warn('User data not loaded yet, reloading...');
             this.loadUserData().then(() => {
@@ -241,14 +290,14 @@ class MentorshipDashboard {
             <div class="space-y-6">
                 <!-- Activity Info -->
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Informações da Mentoria</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Mentorship Information</h3>
                     <div class="space-y-2">
-                        <p><strong>Descrição:</strong> ${activity.description}</p>
-                        <p><strong>Horário:</strong> ${activity.schedule}</p>
-                        <p><strong>Vagas:</strong> ${activity.participants.length}/${activity.max_participants}</p>
+                        <p><strong>Description:</strong> ${activity.description}</p>
+                        <p><strong>Schedule:</strong> ${activity.schedule}</p>
+                        <p><strong>Spots:</strong> ${activity.participants.length}/${activity.max_participants}</p>
                         <p><strong>Status:</strong> 
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium ${isFull ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
-                                ${isFull ? 'Lotada' : `${spotsLeft} vagas disponíveis`}
+                                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium ${isFull ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                ${isFull ? 'Full' : `${spotsLeft} spots available`}
                             </span>
                         </p>
                     </div>
@@ -257,7 +306,7 @@ class MentorshipDashboard {
                 <!-- Participants List -->
                 <div>
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                        Participantes Inscritas (${activity.participants.length})
+                        Enrolled Participants (${activity.participants.length})
                     </h3>
                     ${activity.participants.length > 0 ? `
                         <div class="bg-white border rounded-lg">
@@ -276,7 +325,7 @@ class MentorshipDashboard {
                                             <button onclick="dashboard.cancelParticipant('${activityName}', '${participant.email}')" 
                                                     class="text-red-500 hover:text-red-700 text-sm">
                                                 <i class="fas fa-trash-alt mr-1"></i>
-                                                ${this.userPermissions.includes('self_manage') ? 'Cancelar Minha Inscrição' : 'Remover'}
+                                                ${this.userPermissions.includes('self_manage') ? 'Cancel My Enrollment' : 'Remove'}
                                             </button>
                                         ` : ''}
                                     </div>
@@ -286,7 +335,7 @@ class MentorshipDashboard {
                     ` : `
                         <div class="text-center py-8 text-gray-500">
                             <i class="fas fa-user-plus text-3xl mb-2"></i>
-                            <p>Nenhuma participante inscrita ainda</p>
+                            <p>No participants enrolled yet</p>
                         </div>
                     `}
                 </div>
@@ -294,43 +343,43 @@ class MentorshipDashboard {
                 <!-- Signup Form -->
                 <div class="bg-blue-50 rounded-lg p-4">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                        ${this.userPermissions.includes('self_manage') ? 'Minha Inscrição' : 'Nova Inscrição'}
+                        ${this.userPermissions.includes('self_manage') ? 'My Enrollment' : 'New Enrollment'}
                     </h3>
                     ${this.userPermissions.includes('manage_participants') || this.userPermissions.includes('create') || this.userPermissions.includes('self_manage') ? `
                         <form onsubmit="dashboard.signupParticipant(event, '${activityName}')" class="space-y-4">
                             ${this.userPermissions.includes('self_manage') ? `
-                                <!-- Para participantes, mostrar dados pré-preenchidos -->
+                                <!-- For participants, show pre-filled data -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Seu nome
+                                        Your name
                                     </label>
-                                    <input type="text" value="${this.currentUser?.name || 'Carregando...'}" disabled 
+                                    <input type="text" value="${this.currentUser?.name || 'Loading...'}" disabled 
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Seu e-mail
+                                        Your email
                                     </label>
-                                    <input type="email" value="${this.currentUser?.email || 'Carregando...'}" disabled 
+                                    <input type="email" value="${this.currentUser?.email || 'Loading...'}" disabled 
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600">
                                 </div>
                             ` : `
-                                <!-- Para coordenadoras e mentoras, campos editáveis -->
+                                <!-- For coordinators and mentors, editable fields -->
                                 <div>
                                     <label for="participant-name" class="block text-sm font-medium text-gray-700 mb-1">
-                                        Nome da participante *
+                                        Participant name *
                                     </label>
                                     <input type="text" id="participant-name" required 
-                                           placeholder="Nome completo"
+                                           placeholder="Full name"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                            ${isFull ? 'disabled' : ''}>
                                 </div>
                                 <div>
                                     <label for="participant-email" class="block text-sm font-medium text-gray-700 mb-1">
-                                        E-mail da participante *
+                                        Participant email *
                                     </label>
                                     <input type="email" id="participant-email" required 
-                                           placeholder="participante@womakerscode.org"
+                                           placeholder="participant@womakerscode.org"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                            ${isFull ? 'disabled' : ''}>
                                 </div>
@@ -339,13 +388,13 @@ class MentorshipDashboard {
                                     class="w-full py-2 px-4 rounded-lg font-medium transition-colors ${isFull ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-purple-700'}"
                                     ${isFull ? 'disabled' : ''}>
                                 <i class="fas fa-user-plus mr-2"></i>
-                                ${isFull ? 'Mentoria Lotada' : (this.userPermissions.includes('self_manage') ? 'Me Inscrever' : 'Inscrever Participante')}
+                                ${isFull ? 'Mentorship Full' : (this.userPermissions.includes('self_manage') ? 'Enroll Me' : 'Enroll Participant')}
                             </button>
                         </form>
                     ` : `
                         <div class="text-center py-4 text-gray-600">
                             <i class="fas fa-lock text-2xl mb-2"></i>
-                            <p>Você não tem permissão para inscrever participantes</p>
+                            <p>You don't have permission to enroll participants</p>
                         </div>
                     `}
                 </div>
@@ -355,15 +404,15 @@ class MentorshipDashboard {
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-6">
                     <h3 class="text-lg font-semibold text-red-800 mb-3">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
-                        Área de Administração
+                        Administration Area
                     </h3>
                     <p class="text-sm text-red-700 mb-4">
-                        Atenção: A deleção de uma mentoria é uma ação irreversível e removerá todas as inscrições.
+                        Warning: Deleting a mentorship is an irreversible action and will remove all enrollments.
                     </p>
                     <button id="delete-mentorship-btn" data-activity-name="${activityName}"
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium">
                         <i class="fas fa-trash-alt mr-2"></i>
-                        Deletar Mentoria
+                        Delete Mentorship
                     </button>
                 </div>
                 ` : ''}
@@ -385,52 +434,52 @@ class MentorshipDashboard {
     }
 
     openAddMentorshipModal() {
-        document.getElementById('modal-title').textContent = 'Nova Mentoria';
+        document.getElementById('modal-title').textContent = 'New Mentorship';
         document.getElementById('modal-content').innerHTML = `
             <form onsubmit="dashboard.createNewMentorship(event)" class="space-y-6">
                 <div>
                     <label for="new-mentorship-name" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nome da Mentoria *
+                        Mentorship Name *
                     </label>
                     <input type="text" id="new-mentorship-name" required 
-                           placeholder="Ex: Gestão de Equipes Remotas"
+                           placeholder="Ex: Remote Team Management"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
                 </div>
                 
                 <div>
                     <label for="new-mentorship-description" class="block text-sm font-medium text-gray-700 mb-2">
-                        Descrição *
+                        Description *
                     </label>
                     <textarea id="new-mentorship-description" required rows="3"
-                              placeholder="Descreva o objetivo e conteúdo da mentoria..."
+                              placeholder="Describe the objective and content of the mentorship..."
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="new-mentorship-day" class="block text-sm font-medium text-gray-700 mb-2">
-                            Dia da Semana *
+                            Day of the Week *
                         </label>
                         <select id="new-mentorship-day" required 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                            <option value="">Selecione o dia</option>
-                            <option value="Segundas-feiras">Segundas-feiras</option>
-                            <option value="Terças-feiras">Terças-feiras</option>
-                            <option value="Quartas-feiras">Quartas-feiras</option>
-                            <option value="Quintas-feiras">Quintas-feiras</option>
-                            <option value="Sextas-feiras">Sextas-feiras</option>
-                            <option value="Sábados">Sábados</option>
-                            <option value="Domingos">Domingos</option>
+                            <option value="">Select day</option>
+                            <option value="Mondays">Mondays</option>
+                            <option value="Tuesdays">Tuesdays</option>
+                            <option value="Wednesdays">Wednesdays</option>
+                            <option value="Thursdays">Thursdays</option>
+                            <option value="Fridays">Fridays</option>
+                            <option value="Saturdays">Saturdays</option>
+                            <option value="Sundays">Sundays</option>
                         </select>
                     </div>
                     
                     <div>
                         <label for="new-mentorship-start-time" class="block text-sm font-medium text-gray-700 mb-2">
-                            Horário de Início *
+                            Start Time *
                         </label>
                         <select id="new-mentorship-start-time" required 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                            <option value="">Selecione</option>
+                            <option value="">Select</option>
                             <option value="08:00">08:00</option>
                             <option value="09:00">09:00</option>
                             <option value="10:00">10:00</option>
@@ -449,11 +498,11 @@ class MentorshipDashboard {
                     
                     <div>
                         <label for="new-mentorship-end-time" class="block text-sm font-medium text-gray-700 mb-2">
-                            Horário de Fim *
+                            End Time *
                         </label>
                         <select id="new-mentorship-end-time" required 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                            <option value="">Selecione</option>
+                            <option value="">Select</option>
                             <option value="09:00">09:00</option>
                             <option value="09:30">09:30</option>
                             <option value="10:00">10:00</option>
@@ -482,7 +531,7 @@ class MentorshipDashboard {
                 
                 <div>
                     <label for="new-mentorship-capacity" class="block text-sm font-medium text-gray-700 mb-2">
-                        Capacidade Máxima *
+                        Maximum Capacity *
                     </label>
                     <input type="number" id="new-mentorship-capacity" required min="5" max="50" value="20"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
@@ -492,8 +541,8 @@ class MentorshipDashboard {
                     <div class="flex items-start">
                         <i class="fas fa-info-circle text-blue-500 mt-1 mr-2"></i>
                         <div class="text-sm text-blue-800">
-                            <p class="font-medium mb-1">Dica:</p>
-                            <p>Certifique-se de que o horário não conflite com outras mentorias e que a capacidade seja adequada para o tipo de atividade.</p>
+                            <p class="font-medium mb-1">Tip:</p>
+                            <p>Make sure the schedule doesn't conflict with other mentorships and that the capacity is appropriate for the type of activity.</p>
                         </div>
                     </div>
                 </div>
@@ -501,12 +550,12 @@ class MentorshipDashboard {
                 <div class="flex justify-end space-x-4 pt-4">
                     <button type="button" onclick="dashboard.closeModal()" 
                             class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                        Cancelar
+                        Cancel
                     </button>
                     <button type="submit" 
                             class="px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300">
                         <i class="fas fa-plus mr-2"></i>
-                        Criar Mentoria
+                        Create Mentorship
                     </button>
                 </div>
             </form>
@@ -520,21 +569,21 @@ class MentorshipDashboard {
         event.preventDefault();
         console.log('createNewMentorship called');
         
-        // Capturar os valores dos seletores
+        // Capture selector values
         const day = document.getElementById('new-mentorship-day').value;
         const startTime = document.getElementById('new-mentorship-start-time').value;
         const endTime = document.getElementById('new-mentorship-end-time').value;
         
         console.log('Form values:', { day, startTime, endTime });
         
-        // Validar se todos os campos estão preenchidos
+        // Validate that all fields are filled
         if (!day || !startTime || !endTime) {
             console.log('Validation failed: missing time fields');
-            this.showError('Por favor, preencha todos os campos de horário');
+            this.showError('Please fill in all schedule fields');
             return;
         }
         
-        // Criar o schedule formatado
+        // Create formatted schedule
         const schedule = `${day} das ${startTime} às ${endTime}`;
         
         const formData = {
@@ -566,18 +615,18 @@ class MentorshipDashboard {
                 await this.loadActivities(); // Refresh the activities list
             } else {
                 console.log('Creation failed, showing error message');
-                this.showError(result.detail || 'Erro ao criar mentoria');
+                this.showError(result.detail || 'Error creating mentorship');
             }
         } catch (error) {
             console.error('Error creating mentorship:', error);
-            this.showError('Erro ao criar mentoria. Tente novamente.');
+            this.showError('Error creating mentorship. Please try again.');
         }
     }
 
     async deleteMentorship(activityName) {
         console.log('deleteMentorship called with:', activityName);
         
-        if (!confirm(`Tem certeza que deseja deletar a mentoria "${activityName}"? Esta ação não pode ser desfeita.`)) {
+        if (!confirm(`Are you sure you want to delete the mentorship "${activityName}"? This action cannot be undone.`)) {
             console.log('User cancelled deletion');
             return;
         }
@@ -606,11 +655,11 @@ class MentorshipDashboard {
                 await this.loadActivities(); // Refresh the activities list
             } else {
                 console.log('Deletion failed, showing error message');
-                this.showError(result.detail || 'Erro ao deletar mentoria');
+                this.showError(result.detail || 'Error deleting mentorship');
             }
         } catch (error) {
             console.error('Error deleting mentorship:', error);
-            this.showError('Erro ao deletar mentoria. Tente novamente.');
+            this.showError('Error deleting mentorship. Please try again.');
         }
     }
 
@@ -620,12 +669,12 @@ class MentorshipDashboard {
         console.log('Current user permissions:', this.userPermissions);
         console.log('Current user:', this.currentUser);
         
-        // Verificar se os dados do usuário foram carregados
+        // Check if user data has been loaded
         if (!this.currentUser) {
             console.error('Current user is null, reloading user data...');
             await this.loadUserData();
             if (!this.currentUser) {
-                this.showError('Erro: dados do usuário não carregados. Recarregue a página.');
+                this.showError('Error: user data not loaded. Please reload the page.');
                 return;
             }
         }
@@ -633,25 +682,25 @@ class MentorshipDashboard {
         let name, email;
         
         if (this.userPermissions.includes('self_manage')) {
-            // Para participantes, usar dados do usuário atual
+            // For participants, use current user data
             name = this.currentUser.name;
             email = this.currentUser.email;
             console.log('Using self_manage mode - name:', name, 'email:', email);
             
-            // Verificação adicional para garantir que os dados existem
+            // Additional check to ensure data exists
             if (!name || !email) {
                 console.error('Current user missing name or email:', this.currentUser);
-                this.showError('Erro: dados incompletos do usuário. Tente trocar de perfil e voltar.');
+                this.showError('Error: incomplete user data. Try switching profile and returning.');
                 return;
             }
         } else {
-            // Para outros perfis, pegar dos campos do formulário
+            // For other profiles, get from form fields
             const nameField = document.getElementById('participant-name');
             const emailField = document.getElementById('participant-email');
             
             if (!nameField || !emailField) {
                 console.error('Form fields not found');
-                this.showError('Erro: campos do formulário não encontrados.');
+                this.showError('Error: form fields not found.');
                 return;
             }
             
@@ -662,7 +711,7 @@ class MentorshipDashboard {
         
         if (!name || !email) {
             console.log('Missing name or email');
-            this.showError('Nome e email são obrigatórios');
+            this.showError('Name and email are required');
             return;
         }
         
@@ -670,21 +719,28 @@ class MentorshipDashboard {
             const encodedActivityName = encodeURIComponent(activityName);
             
             let url = `/activities/${encodedActivityName}/signup`;
+            let requestBody = {};
             
-            // Se não é auto-gerenciamento, incluir name e email na URL
-            if (!this.userPermissions.includes('self_manage')) {
+            // For self_manage users, send data in request body
+            if (this.userPermissions.includes('self_manage')) {
+                // No need to add query parameters, backend will use current user data
+                requestBody = {};
+            } else {
+                // For other profiles, include name and email in URL query parameters
                 const encodedName = encodeURIComponent(name);
                 const encodedEmail = encodeURIComponent(email);
                 url += `?name=${encodedName}&email=${encodedEmail}`;
             }
             
             console.log('Making POST request to:', url);
+            console.log('Request body:', requestBody);
             
             const response = await fetch(url, { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: Object.keys(requestBody).length > 0 ? JSON.stringify(requestBody) : undefined
             });
 
             console.log('Response status:', response.status);
@@ -694,10 +750,12 @@ class MentorshipDashboard {
             if (response.ok) {
                 console.log('Signup successful');
                 this.showSuccess(result.message);
-                await this.loadActivities();
-                this.openActivityModal(activityName); // Refresh modal
                 
-                // Clear form apenas se não for auto-gerenciamento
+                // Refresh the activity data and then the modal
+                await this.refreshSingleActivity(activityName);
+                this.openActivityModal(activityName); // Refresh modal with updated data
+                
+                // Clear form only if not self-management
                 if (!this.userPermissions.includes('self_manage')) {
                     const nameField = document.getElementById('participant-name');
                     const emailField = document.getElementById('participant-email');
@@ -706,19 +764,19 @@ class MentorshipDashboard {
                 }
             } else {
                 console.log('Signup failed with error:', result.detail);
-                this.showError(result.detail || 'Erro ao realizar inscrição');
+                this.showError(result.detail || 'Error enrolling participant');
             }
         } catch (error) {
             console.error('Error signing up participant:', error);
-            this.showError('Erro ao realizar inscrição. Tente novamente.');
+            this.showError('Error enrolling participant. Please try again.');
         }
     }
 
     async cancelParticipant(activityName, email) {
         const isOwnCancellation = this.userPermissions.includes('self_manage') && email === this.currentUser.email;
         const confirmMessage = isOwnCancellation 
-            ? `Tem certeza que deseja cancelar sua inscrição na mentoria "${activityName}"?`
-            : `Tem certeza que deseja remover ${email} da mentoria "${activityName}"?`;
+            ? `Are you sure you want to cancel your enrollment in the mentorship "${activityName}"?`
+            : `Are you sure you want to remove ${email} from the mentorship "${activityName}"?`;
             
         if (!confirm(confirmMessage)) {
             return;
@@ -729,7 +787,7 @@ class MentorshipDashboard {
             
             let url = `/activities/${encodedActivityName}/cancel`;
             
-            // Se não é auto-gerenciamento, incluir email na URL
+            // If not self-management, include email in URL
             if (!this.userPermissions.includes('self_manage')) {
                 const encodedEmail = encodeURIComponent(email);
                 url += `?email=${encodedEmail}`;
@@ -751,23 +809,26 @@ class MentorshipDashboard {
 
             if (response.ok) {
                 this.showSuccess(result.message);
-                await this.loadActivities();
-                this.openActivityModal(activityName); // Refresh modal
+                
+                // Refresh the activity data and then the modal
+                await this.refreshSingleActivity(activityName);
+                this.openActivityModal(activityName); // Refresh modal with updated data
             } else {
-                this.showError(result.detail || 'Erro ao cancelar inscrição');
+                this.showError(result.detail || 'Error canceling enrollment');
             }
         } catch (error) {
             console.error('Error canceling participant:', error);
-            this.showError('Erro ao cancelar inscrição. Tente novamente.');
+            this.showError('Error canceling enrollment. Please try again.');
         }
     }
 
     async loadUserData() {
         console.log('Loading user data...');
         try {
+            const timestamp = new Date().getTime();
             const [userResponse, profilesResponse] = await Promise.all([
-                fetch('/users/current'),
-                fetch('/users/profiles')
+                fetch(`/users/current?_t=${timestamp}`),
+                fetch(`/users/profiles?_t=${timestamp}`)
             ]);
             
             console.log('User response status:', userResponse.status);
@@ -796,7 +857,7 @@ class MentorshipDashboard {
     }
     
     updateUserInterface(userData, profiles) {
-        // Verificar se os elementos existem antes de tentar atualizá-los
+        // Check if elements exist before trying to update them
         const userNameElement = document.getElementById('current-user-name');
         const profileNameElement = document.getElementById('current-profile-name');
         const iconElement = document.getElementById('current-profile-icon');
@@ -856,17 +917,17 @@ class MentorshipDashboard {
             if (response.ok) {
                 // Reload user data and refresh interface
                 await this.loadUserData();
-                this.showSuccess(`Usuário alterado para perfil de ${profileName}!`);
+                this.showSuccess(`User switched to ${profileName} profile!`);
                 
                 // Reload activities to update permissions
                 await this.loadActivities();
             } else {
                 const result = await response.json();
-                this.showError(result.detail || 'Erro ao alterar perfil');
+                this.showError(result.detail || 'Error switching profile');
             }
         } catch (error) {
             console.error('Error switching profile:', error);
-            this.showError('Erro ao alterar perfil');
+            this.showError('Error switching profile');
         }
     }
 

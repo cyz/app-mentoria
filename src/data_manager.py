@@ -21,6 +21,21 @@ class DataManager:
                 self._activities = {}
         return self._activities
     
+    def refresh_activities(self) -> Dict[str, Any]:
+        """Force refresh activities from file"""
+        self._activities = None
+        return self.load_activities()
+    
+    def update_activity(self, activity_name: str, updates: Dict[str, Any]) -> bool:
+        """Update an existing activity with new data"""
+        activities = self.load_activities()
+        if activity_name in activities:
+            activities[activity_name].update(updates)
+            self._activities = activities
+            self.save_activities()
+            return True
+        return False
+    
     def save_activities(self) -> None:
         """Salva as atividades no arquivo JSON"""
         if self._activities is not None:
@@ -28,6 +43,8 @@ class DataManager:
             self.data_dir.mkdir(exist_ok=True)
             with open(self.activities_file, 'w', encoding='utf-8') as f:
                 json.dump(self._activities, f, ensure_ascii=False, indent=4)
+            # Clear cache to force reload on next access
+            self._activities = None
     
     def load_users(self) -> Dict[str, Any]:
         """Carrega os dados de usuários do arquivo JSON"""
@@ -46,7 +63,7 @@ class DataManager:
             with open(self.users_file, 'w', encoding='utf-8') as f:
                 json.dump(self._users, f, ensure_ascii=False, indent=4)
     
-    def get_activity(self, activity_name: str) -> Dict[str, Any]:
+    def get_activity(self, activity_name: str) -> Dict[str, Any] | None:
         """Obtém uma atividade específica"""
         activities = self.load_activities()
         return activities.get(activity_name)
@@ -122,7 +139,7 @@ class DataManager:
         
         return participant_activities_by_day
     
-    def _extract_day_from_schedule(self, schedule: str) -> str:
+    def _extract_day_from_schedule(self, schedule: str) -> str | None:
         """Extrai o dia da semana do horário"""
         schedule_lower = schedule.lower()
         days = {
